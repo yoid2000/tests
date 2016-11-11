@@ -1,32 +1,35 @@
 use strict;
 use Math::Random qw(random_uniform_integer random_set_seed_from_phrase);
 
+my $vb = 0;	# verbose
+
 my $maxCols = 60;
 
 sub doLcTest {
 my($colNames, $table, $distinctUsers, $ofh) = @_;
 
   random_set_seed_from_phrase("seed1");
+  print $ofh "testNum,numMatchingUsers,numMatchingColumns,columnMask,attrFreq";
   
   my @colNames = @{ $colNames };
   my @table = @{ $table };
-  print "There are ".($#colNames + 1)." column names:\n";
-  print $ofh "There are ".($#colNames + 1)." column names:\n";
+  if ($vb) { print "There are ".($#colNames + 1)." column names:\n"; }
+  if ($vb) { print $ofh "There are ".($#colNames + 1)." column names:\n"; }
   foreach (@colNames) {
-    print $ofh "$_\n";
-    print "$_\n";
+    if ($vb) { print $ofh "$_\n"; }
+    if ($vb) { print "$_\n"; }
   }
-  print "There are $distinctUsers distinct users\n";
-  print $ofh "There are $distinctUsers distinct users\n";
-  print "There are ".($#table + 1)." table rows\n";
-  print $ofh "There are ".($#table + 1)." table rows\n";
+  if ($vb) { print "There are $distinctUsers distinct users\n"; }
+  if ($vb) { print $ofh "There are $distinctUsers distinct users\n"; }
+  if ($vb) { print "There are ".($#table + 1)." table rows\n"; }
+  if ($vb) { print $ofh "There are ".($#table + 1)." table rows\n"; }
   if ($#colNames > $maxCols) {
-    print "Too many columns.  Exiting.\n";
-    print $ofh "Too many columns.  Exiting.\n";
+    if ($vb) { print "Too many columns.  Exiting.\n"; }
+    if ($vb) { print $ofh "Too many columns.  Exiting.\n"; }
   }
   if (0) {
     foreach (@table) {
-      printRow($_, $ofh);
+      if ($vb) { printRow($_, $ofh); }
     }
     flush $ofh;
     exit;
@@ -37,7 +40,7 @@ my($colNames, $table, $distinctUsers, $ofh) = @_;
   my $totTries = 0;
   my $numDupUidMatches = 0;
   my $nullUid = "abcdefghijkl";
-  my $numTrack = 9;
+  my $numTrack = 4;
   my @totNumMatchUsers = ();
   my @totNumMatchColumns = ();
   for (my $i = 0; $i <= $#colNames; $i++) { $totNumMatchColumns[$i] = 0; }
@@ -51,20 +54,23 @@ my($colNames, $table, $distinctUsers, $ofh) = @_;
     my $v = $vRow->[0];
     my $vAttr = random_uniform_integer(1, 1, $#colNames);
     my $vAttrName = $colNames[$vAttr];
-    print $ofh "---------------------------------------------\n";
-    print $ofh "Try victim $v row, attr $vAttr ($vAttrName):\n";
-    print "Try victim $v row, attr $vAttr ($vAttrName):\n";
-    printRow($vRow, $ofh);
+    my $vAttrVal = $vRow->[$vAttr];
+    if ($vb) { print $ofh "---------------------------------------------\n"; }
+    if ($vb) { print $ofh "Try victim $v row, attr $vAttr ($vAttrName):\n"; }
+    if ($vb) { print "Try victim $v row, attr $vAttr ($vAttrName):\n"; }
+    if ($vb) { printRow($vRow, $ofh); }
     # ok, now go through whole table and find attack configurations
     my %numMatches = ();
     my %matchUids = ();
     my %matchRows = ();
     my $debug = 0;
     #if (($v == 1639114) && ($vRow->[$vAttr] == 16948)) { $debug = 1; }
+    my $freqTot = 0;
     for (my $rowIndex = 0; $rowIndex <= $#table; $rowIndex++) {
       my $row = $table[$rowIndex];
       # can't be an attack row if the target attribute doesn't match
       next if ($row->[$vAttr] ne $vRow->[$vAttr]);
+      $freqTot++;
       if ($debug) { print $ofh "$rowIndex: $row->[$vAttr]\n"; }
       # can't be an attack row if same UID as victim
       next if ($row->[0] eq $v);
@@ -111,6 +117,12 @@ my($colNames, $table, $distinctUsers, $ofh) = @_;
         next;
       }
     }
+    my $freq = $freqTot / ($#table + 1);
+    if ($freq > 0.98) {
+      $totTries--;
+      next;
+    }
+    my $freqStr = sprintf "%.5f", $freq;
     foreach my $match (keys %numMatches) {
       next if ($numMatches{$match} >= $numTrack);
       my $numOnes = getNumOnes($match);
@@ -118,23 +130,25 @@ my($colNames, $table, $distinctUsers, $ofh) = @_;
       $totNumMatchColumns[$numOnes] += $numMatches;
       $totNumMatchUsers[$numMatches]++;
       my $str = sprintf("%x", $match);
-      print $ofh "Got $numMatches matching users over $numOnes columns $str:\n";
+      print $ofh "$totTries,$numMatches,$numOnes,\"$str\",$freqStr,\"$vAttrName\",\"$vAttrVal\"\n";
+      print "$totTries,$numMatches,$numOnes,\"$str\",$freqStr,\"$vAttrName\",\"$vAttrVal\"\n";
+      if ($vb) { print $ofh "Got $numMatches matching users over $numOnes columns $str:\n"; }
       for (my $j = 0; $j < $numMatches; $j++) {
         my $rowIndex = $matchRows{$match}->[$j];
-        printRow($table[$rowIndex], $ofh);
+        if ($vb) { printRow($table[$rowIndex], $ofh); }
       }
     }
-    print $ofh "\nAfter $totTries tries:\n";
-    for (my $i = 1; $i <= $#colNames; $i++) { 
+    if ($vb) { print $ofh "\nAfter $totTries tries:\n"; }
+    for (my $i = 1; $i <= $#colNames; $i++) {
       my $avg = $totNumMatchColumns[$i] / $totTries;
       my $str = sprintf("%.6f", $avg);
-      print $ofh "    $str matches with $i columns\n";
+      if ($vb) { print $ofh "    $str matches with $i columns\n"; }
     }
-    print $ofh "-----\n";
+    if ($vb) { print $ofh "-----\n"; }
     for (my $i = 0; $i <= $numTrack; $i++) { 
       my $avg = $totNumMatchUsers[$i] / $totTries;
       my $str = sprintf("%.6f", $avg);
-      print $ofh "    $str matches with $i users\n";
+      if ($vb) { print $ofh "    $str matches with $i users\n"; }
     }
     flush $ofh;
   }
