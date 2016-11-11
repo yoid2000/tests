@@ -1,0 +1,9 @@
+2 known users
+5 prob user has attribute
+mean 4, sd 0.6, bound 1
+0.28013 percent of tries were reported
+Victim has attr:
+   85.5317174169136 percent correct
+Victim does not have attr:
+   95.2379801538049 percent correct
+Total percent right: 95.21079
