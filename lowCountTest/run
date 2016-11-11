@@ -1,0 +1,27 @@
+#./lowCountTest.pl 1 95 4 0.6 1  &
+#./lowCountTest.pl 1 50 4 0.6 1  &
+#./lowCountTest.pl 1 5 4 0.6 1  &
+#./lowCountTest.pl 1 1 4 0.6 1  &
+#./lowCountTest.pl 1 95 5 0.6 1  &
+#./lowCountTest.pl 1 50 5 0.6 1  &
+#./lowCountTest.pl 1 5 5 0.6 1  &
+#./lowCountTest.pl 1 1 5 0.6 1  &
+
+#./lowCountTest.pl 1 95 4 0.6 0  &
+#./lowCountTest.pl 1 50 4 0.6 0  &
+#./lowCountTest.pl 1 5 4 0.6 0  &
+#./lowCountTest.pl 1 1 4 0.6 0  &
+#./lowCountTest.pl 1 95 5 0.6 0  &
+#./lowCountTest.pl 1 50 5 0.6 0  &
+#./lowCountTest.pl 1 5 5 0.6 0  &
+#./lowCountTest.pl 1 1 5 0.6 0  &
+
+./lowCountTest.pl 2 95 4 0.6 1  &
+./lowCountTest.pl 2 50 4 0.6 1  &
+./lowCountTest.pl 2 5 4 0.6 1  &
+./lowCountTest.pl 2 1 4 0.6 1  &
+./lowCountTest.pl 2 95 5 0.6 1  &
+./lowCountTest.pl 2 50 5 0.6 1  &
+./lowCountTest.pl 2 5 5 0.6 1  &
+./lowCountTest.pl 2 1 5 0.6 1  &
+
